@@ -1,9 +1,11 @@
 How to run:
-1. Run this command to install libraries:
-`pip install av cv2 streamlit os mediapipe numpy streamlit_webrtc keras-vggface tensorflow keras`
+1. Run this command to change directory to this project:
+`cd face_recognition_with_streamlit`
 
-2. Open your terminal, run:
-+ `cd face_recognition_with_streamlit`
+2. Run this command to install libraries:
+`pip install -r requirements.txt`
+
+3. Run streamlit app
 + `streamlit run demo.py`
 
 ### TO DO:

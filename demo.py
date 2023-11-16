@@ -76,9 +76,10 @@ def add_face(face_detection):
                 width = int(bbox.width * w)
                 height = int(bbox.height * h)
 
-                # Lấy ra hình chữ nhật của khuôn mặt
-                face = img[y : y + height, x : x + width]
-                cv2.rectangle(img, (x, y), (x + width, y + height), (0, 255, 0), 2)
+                if x > 0 and y > 0:
+                    # Lấy ra hình chữ nhật của khuôn mặt
+                    face = img[y : y + height, x : x + width]
+                    cv2.rectangle(img, (x, y), (x + width, y + height), (0, 255, 0), 2)
 
         # Lưu ảnh khi nút "Take picture" được nhấn
         if save_image:
@@ -146,26 +147,27 @@ def face_recognition(face_detection, embedding_dict, model):
                 y = int(bbox.ymin * h)
                 width = int(bbox.width * w)
                 height = int(bbox.height * h)
-
-                # Lấy ra hình chữ nhật của khuôn mặt
-                face = img[y : y + height, x : x + width]
-                img = cv2.rectangle(img, (x, y), (x + width, y + height), (0, 255, 0), 2)
-
-                face_to_extract = cv2.resize(face, (224, 224))
-                embedding_vector = extract_feature_from_image(face_to_extract, model)
                 
-                if len(embedding_dict) == 0:
-                    name = "Unknown"
-                else:
-                    name = label(embedding_vector, embedding_dict)
-                
-                img = cv2.putText(img=img,
-                                  text=name,
-                                  org=(50, 50),
-                                  fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                                  fontScale=1,
-                                  color=(255, 0, 0),
-                                  thickness=2)
+                if x > 0 and y > 0:
+                    # Lấy ra hình chữ nhật của khuôn mặt
+                    face = img[y : y + height, x : x + width]
+                    img = cv2.rectangle(img, (x, y), (x + width, y + height), (0, 255, 0), 2)
+
+                    face_to_extract = cv2.resize(face, (224, 224))
+                    embedding_vector = extract_feature_from_image(face_to_extract, model)
+                    
+                    if len(embedding_dict) == 0:
+                        name = "Unknown"
+                    else:
+                        name = label(embedding_vector, embedding_dict)
+                    
+                    img = cv2.putText(img=img,
+                                    text=name,
+                                    org=(50, 50),
+                                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                                    fontScale=1,
+                                    color=(255, 0, 0),
+                                    thickness=2)
                 
         return av.VideoFrame.from_ndarray(img, format="bgr24")
     
