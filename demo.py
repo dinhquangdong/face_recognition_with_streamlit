@@ -163,7 +163,7 @@ def face_recognition(face_detection, embedding_dict, model):
                     
                     img = cv2.putText(img=img,
                                     text=name,
-                                    org=(50, 50),
+                                    org=(x, y),
                                     fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                                     fontScale=1,
                                     color=(255, 0, 0),
