@@ -125,7 +125,6 @@ def label(embedded_vector, embedding_dict):
             cos_sim = cosine_similarity(embedded_vector, vector)
             arr.append(cos_sim)
         avg = np.max(arr)
-        print(avg)
         if avg > max_cos_sim:
             return key
         else:
