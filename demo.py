@@ -118,7 +118,8 @@ def add_face(face_detection):
 
 
 def label(embedded_vector, embedding_dict):
-    max_cos_sim = 0.7
+    threshold = 0.7
+    max_cos_sim = -float('inf')
     for key in embedding_dict.keys():
         arr = []
         for vector in embedding_dict[key]:
@@ -126,9 +127,11 @@ def label(embedded_vector, embedding_dict):
             arr.append(cos_sim)
         avg = np.max(arr)
         if avg > max_cos_sim:
-            return key
-        else:
-            label = "Unknown"
+            label = key
+            max_cos_sim = avg
+            
+    if max_cos_sim < threshold:
+        label = "Unknown"
     return label
     
 
