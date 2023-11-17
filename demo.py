@@ -30,18 +30,18 @@ def extract_feature_from_image(img, model):
     x = preprocess_input(x)
     
     # Trích xuất đặc trưng từ ảnh
-    features = model.predict(x)
+    feature = model.predict(x)
     
     # Reshape features từ (1, 512) về (512,)
-    features = np.squeeze(features)
-    return features
+    feature = np.squeeze(feature)
+    return feature
 
 # Hàm tính cosine similarity
 def cosine_similarity(vector_1, vector_2):
     return np.dot(vector_1, vector_2)/(np.linalg.norm(vector_1)*np.linalg.norm(vector_2))
 
-#@st.cache_data
-def load_known_embed_vectors(model):
+# @st.cache_data
+def load_known_embed_vectors(_model):
     dict = {}
     for name in os.listdir("Imgs"):
         dict[name] = []
@@ -50,7 +50,7 @@ def load_known_embed_vectors(model):
         for filename in os.listdir(folder_path):
             img_path = os.path.join(folder_path, filename)
             img = image.load_img(img_path, target_size=(224, 224))    # Đọc ảnh và chỉnh về kích thước (224, 224)
-            embedded_vector = extract_feature_from_image(img, model)
+            embedded_vector = extract_feature_from_image(img, _model)
             dict[name].append(embedded_vector)
     return dict
 
@@ -76,10 +76,9 @@ def add_face(face_detection):
                 width = int(bbox.width * w)
                 height = int(bbox.height * h)
 
-                if x > 0 and y > 0:
-                    # Lấy ra hình chữ nhật của khuôn mặt
-                    face = img[y : y + height, x : x + width]
-                    cv2.rectangle(img, (x, y), (x + width, y + height), (0, 255, 0), 2)
+                # Lấy ra hình chữ nhật của khuôn mặt
+                face = img[y : y + height, x : x + width]
+                cv2.rectangle(img, (x, y), (x + width, y + height), (0, 255, 0), 2)
 
         # Lưu ảnh khi nút "Take picture" được nhấn
         if save_image:
@@ -89,16 +88,19 @@ def add_face(face_detection):
                 label = "Unknown"
 
             folder_path = os.path.join("Imgs", label)
+            img_path = os.path.join(folder_path, "1.jpg")
             if os.path.isdir(folder_path):  # Nếu đã tồn tại folder ảnh của người đó
                 # Lấy ra số tiếp theo để lưu vào
                 next_number = len(os.listdir(folder_path)) + 1
-                cv2.imwrite(os.path.join(folder_path, f"{next_number}.jpg"), face)
+                img_path = os.path.join(folder_path, f"{next_number}.jpg")
+                cv2.imwrite(img_path, face)
                 save_image = False
             else:
                 os.makedirs(folder_path)
-                cv2.imwrite(os.path.join(folder_path, "1.jpg"), face)
+                cv2.imwrite(img_path, face)
                 save_image = False
-                
+            
+            
         return av.VideoFrame.from_ndarray(img, format="bgr24")
 
 
@@ -111,30 +113,32 @@ def add_face(face_detection):
     take_picture_button = st.button("Take picture")
     if take_picture_button:
         save_image = True
+       
 
 
 
 def label(embedded_vector, embedding_dict):
-    max_cos_sim = -float('inf')
+    max_cos_sim = 0.7
     for key in embedding_dict.keys():
         arr = []
         for vector in embedding_dict[key]:
             cos_sim = cosine_similarity(embedded_vector, vector)
             arr.append(cos_sim)
-        avg = np.mean(arr)
+        avg = np.max(arr)
+        print(avg)
         if avg > max_cos_sim:
-            max_cos_sim = avg
-            label = key
-    
+            return key
+        else:
+            label = "Unknown"
     return label
     
-            
+
 
 ##### GIAO DIỆN PHÂN BIỆT KHUÔN MẶT #####
 def face_recognition(face_detection, embedding_dict, model):
     def callback(frame):
         nonlocal face_detection
-        
+       
         img = frame.to_ndarray(format="bgr24")
         img = cv2.flip(img, 1)
         
@@ -144,13 +148,16 @@ def face_recognition(face_detection, embedding_dict, model):
                 bbox = detection.location_data.relative_bounding_box
                 h, w, _ = img.shape
                 x = int(bbox.xmin * w)
-                y = int(bbox.ymin * h)
+                y =  int(bbox.ymin * h)
+                
                 width = int(bbox.width * w)
                 height = int(bbox.height * h)
+
+            
                 
-                if x > 0 and y > 0:
-                    # Lấy ra hình chữ nhật của khuôn mặt
-                    face = img[y : y + height, x : x + width]
+                # Lấy ra hình chữ nhật của khuôn mặt
+                face = img[y : y + height, x : x + width]
+                if (x>0 and y>0):
                     img = cv2.rectangle(img, (x, y), (x + width, y + height), (0, 255, 0), 2)
 
                     face_to_extract = cv2.resize(face, (224, 224))
@@ -159,7 +166,7 @@ def face_recognition(face_detection, embedding_dict, model):
                     if len(embedding_dict) == 0:
                         name = "Unknown"
                     else:
-                        name = label(embedding_vector, embedding_dict)
+                        name = label(embedding_vector,  embedding_dict)
                     
                     img = cv2.putText(img=img,
                                     text=name,
@@ -179,12 +186,10 @@ def face_recognition(face_detection, embedding_dict, model):
 ########### INTERFACE ###########
 face_detection = load_facedetection()
 vggface_model = load_vggface_model()
+embedding_dict = load_known_embed_vectors(vggface_model)
 
 genre = st.sidebar.radio(label='Mode', options=['Add face', 'Face recognition'])
 if genre == "Add face":
-    st.cache_data.clear()
     add_face(face_detection)
 else:
-    st.cache_data.clear()
-    embedding_dict = load_known_embed_vectors(vggface_model)
     face_recognition(face_detection, embedding_dict, vggface_model)
