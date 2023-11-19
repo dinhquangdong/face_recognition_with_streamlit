@@ -1,13 +1,16 @@
 How to run:
-1. Run this command to change directory to this project:
+1. Open your terminal
+2. Clone this project:
+`git clone https://github.com/dinhquangdong/face_recognition_with_streamlit`
+3. Run this command to change directory to this project:
 `cd face_recognition_with_streamlit`
 
-2. Run this command to install libraries:
+4. Install libraries:
 `pip install -r requirements.txt`
 
-3. Run streamlit app
-+ `streamlit run demo.py`
+5. Run streamlit app on your browser:
+`streamlit run demo.py`
 
 ### TO DO:
 - Fix lag
-- Ứng dụng tiêu tốn khá nhiều RAM và CPU (có thể do cơ chế cache của Streamlit)
+- The application consumes a significant amount of RAM and CPU (possibly due to Streamlit's caching mechanism)
