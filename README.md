@@ -1,7 +1,7 @@
 How to run:
 1. Open your terminal
 2. Clone this project:
-`git clone https://github.com/dinhquangdong/face_recognition_with_streamlit`
+`git clone https://github.com/dinhquangdong/face_recognition_with_streamlit.git`
 3. Run this command to change directory to this project:
 `cd face_recognition_with_streamlit`
 
